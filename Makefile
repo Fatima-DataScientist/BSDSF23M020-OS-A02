@@ -1,13 +1,6 @@
-
-# =========================================================
-# Makefile for lsv1.1.0 (Feature 2 - Long Listing)
-# Author: Fatima Tu Zahra
-# Description: Builds the ls utility (normal + -l long listing)
-# =========================================================
-
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -std=c11 -g
 
 # Directories
 SRC_DIR = src
@@ -19,40 +12,22 @@ SRC = $(SRC_DIR)/lsv1.1.0.c
 OBJ = $(OBJ_DIR)/lsv1.1.0.o
 
 # Output binary
-TARGET = $(BIN_DIR)/lsv1.1.0
+TARGET = $(BIN_DIR)/ls
 
-# =========================================================
-# Default target: build everything
-# =========================================================
+# Default target
 all: $(TARGET)
 
-# Build rule
+# Rule to build the target
 $(TARGET): $(OBJ)
-	@echo "🔧 Linking object files to create executable..."
-	$(CC) $(CFLAGS) $^ -o $@
-	@echo "✅ Build complete! Executable created at: $(TARGET)"
+	@mkdir -p $(BIN_DIR)
+	$(CC) $(CFLAGS) -o $@ $^
 
-# Compile rule for object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+# Rule to compile object file
+$(OBJ): $(SRC)
 	@mkdir -p $(OBJ_DIR)
-	@echo "🧱 Compiling source file: $<"
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Run target
-run: all
-	@echo "🚀 Running program..."
-	@$(TARGET)
-
-# Clean rule - remove compiled files
+# Clean object files and binary
 clean:
-	@echo "🧹 Cleaning project files..."
-	rm -f $(OBJ_DIR)/*.o $(TARGET)
-
-# Very clean rule - removes even directories (optional)
-distclean: clean
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
-
-# =========================================================
-# End of Makefile
-# =========================================================
+	rm -rf $(OBJ_DIR)/*.o $(TARGET)
 

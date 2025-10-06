@@ -1,43 +1,30 @@
-REPORT for Feature-2: Version 1.1.0 - Complete Long Listing Format
+# REPORT - Column Display Feature (v1.2.0)
 
-Q1. What is the crucial difference between the stat() and lstat() system calls? 
-In the context of the ls command, when is it more appropriate to use lstat()?
+## 1. General Logic for "Down Then Across" Columnar Printing
 
-Answer:
-The stat() and lstat() system calls are both used to retrieve metadata (information) about files,
-such as size, permissions, ownership, and timestamps. The main difference is how they handle symbolic links:
+The "down then across" printing method prints filenames row by row across multiple columns. The steps involved are:
 
-- stat() follows symbolic links — it gives information about the target file that the link points to.
-- lstat() does not follow symbolic links — it gives information about the link itself, not the target.
+1. Read all directory entries into a dynamically allocated array of strings.
+2. Keep track of the length of the longest filename.
+3. Calculate the number of columns that can fit in the terminal:
+   - Terminal width / (maximum filename length + spacing)
+4. Calculate the number of rows needed:
+   - rows = ceil(total_files / num_columns)
+5. Iterate row by row and print each file from every column for that row:
+   - For row i: print filenames[i], filenames[i + num_rows], filenames[i + 2*num_rows], ...
+6. Pad each filename with spaces to ensure columns align properly.
 
-In the context of the ls command, lstat() is more appropriate because ls -l needs to correctly display
-information for symbolic links (like showing lrwxrwxrwx and the link name), instead of following the
-link to another file. Using lstat() ensures the program lists the properties of the symbolic link itself.
+**Why a simple loop is insufficient:**  
+A single loop would print filenames linearly, producing a single column or a poorly aligned horizontal layout. The "down then across" format ensures that columns are evenly filled and visually aligned, making the output more readable.
 
+---
 
-Q2. The st_mode field in struct stat is an integer that contains both the file type (e.g., regular file, directory)
-and the permission bits. Explain how you can use bitwise operators (like &) and predefined macros (like S_IFDIR or S_IRUSR)
-to extract this information.
+## 2. Purpose of ioctl System Call
 
-Answer:
-The st_mode field is a set of bit flags where each bit (or group of bits) represents specific information about
-the file — such as its type and access permissions. You can use bitwise AND (&) with predefined macros to test
-which bits are set.
+The `ioctl` system call with the `TIOCGWINSZ` request is used to programmatically detect the current terminal width. This allows the program to dynamically adjust the number of columns to fit the terminal screen.
 
-For example:
-    if (S_ISDIR(sb.st_mode))
-        printf("This is a directory.\n");
+**Limitations of a fixed-width fallback (e.g., 80 columns):**
 
-Here, the macro S_ISDIR() internally checks whether the bits in st_mode match the directory type (S_IFDIR).
-
-Similarly, for permissions:
-    if (sb.st_mode & S_IRUSR)
-        printf("Owner has read permission.\n");
-    if (sb.st_mode & S_IWGRP)
-        printf("Group has write permission.\n");
-    if (sb.st_mode & S_IXOTH)
-        printf("Others have execute permission.\n");
-
-Each macro (like S_IRUSR, S_IWGRP, S_IXOTH) represents a bit mask for a specific permission.
-Using bitwise operators with these macros allows us to extract and interpret the file’s type and permission
-bits from the integer st_mode value.
+- Columns may not fully utilize the terminal width or may exceed it, causing line wrapping.
+- The output layout will not adapt when the terminal is resized.
+- Overall user experience is less flexible and visually inconsistent across different terminal sizes.

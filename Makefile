@@ -1,33 +1,19 @@
-# Compiler and flags
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -g
+SRC = src/lsv1.3.0.c
+OBJ = obj/lsv1.3.0.o
+BIN = bin/ls
 
-# Directories
-SRC_DIR = src
-OBJ_DIR = obj
-BIN_DIR = bin
+all: $(BIN)
 
-# Source and object files
-SRC = $(SRC_DIR)/lsv1.1.0.c
-OBJ = $(OBJ_DIR)/lsv1.1.0.o
+$(BIN): $(OBJ)
+	mkdir -p bin
+	$(CC) $(CFLAGS) -o $(BIN) $(OBJ)
 
-# Output binary
-TARGET = $(BIN_DIR)/ls
-
-# Default target
-all: $(TARGET)
-
-# Rule to build the target
-$(TARGET): $(OBJ)
-	@mkdir -p $(BIN_DIR)
-	$(CC) $(CFLAGS) -o $@ $^
-
-# Rule to compile object file
 $(OBJ): $(SRC)
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+	mkdir -p obj
+	$(CC) $(CFLAGS) -c $(SRC) -o $(OBJ)
 
-# Clean object files and binary
 clean:
-	rm -rf $(OBJ_DIR)/*.o $(TARGET)
+	rm -rf obj/*.o $(BIN)
 

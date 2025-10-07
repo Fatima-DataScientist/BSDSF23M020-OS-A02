@@ -1,13 +1,21 @@
-1. Why is it necessary to read all directory entries into memory before you can sort them? 
-   What are the potential drawbacks of this approach for directories containing millions of files?
+1. ANSI Escape Codes for Color in Linux Terminal:
+ANSI escape codes are special sequences of characters that the terminal interprets to apply text formatting such as colors, bold, underline, or background changes. They begin with the ESC character (ASCII 27) followed by `[` and end with a code specifying the format, then `m`. After printing the text, you reset the formatting using the reset code.
 
-Answer:
-Reading all directory entries into memory is necessary because sorting requires access to all filenames at once. Functions like qsort() need an array of all elements to compare and rearrange them. The main drawback of this approach is memory usage: for directories with millions of files, storing all names in memory can consume a large amount of RAM, potentially leading to slow performance or memory exhaustion.
+Example: To print text in green:
+printf("\033[0;32m%s\033[0m\n", "This text is green");
 
-2. Explain the purpose and signature of the comparison function required by qsort(). How does it work, and why must it take const void * arguments?
+Explanation:
+- \033: Escape character (ESC)
+- [0;32m: 0 = default style, 32 = green foreground
+- \033[0m: Reset formatting to default after the text
 
-Answer:
-The comparison function provides qsort() with the rules for ordering elements. Its signature is:
-    int cmp(const void *a, const void *b);
+2. Checking Executable Permission Bits in st_mode:
+The st_mode field of struct stat contains both file type and permission bits. To determine if a file is executable:
+- Owner executable: S_IXUSR (0400)
+- Group executable: S_IXGRP (0040)
+- Others executable: S_IXOTH (0004)
 
-It takes two const void * pointers to allow qsort() to work with arrays of any type. Inside the function, these pointers are cast to the actual data type (in our case, char **) and then compared using strcmp(). The function returns a negative value if the first element is smaller, zero if equal, and positive if larger, guiding qsort() in arranging the array in ascending alphabetical order.
+You can check if a file is executable by using bitwise AND with st_mode:
+if (st.st_mode & S_IXUSR) { /* Owner can execute */ }
+if (st.st_mode & S_IXGRP) { /* Group can execute */ }
+if (st.st_mode & S_IXOTH) { /* Others can execute */ }

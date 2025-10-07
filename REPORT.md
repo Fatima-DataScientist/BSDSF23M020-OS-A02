@@ -1,30 +1,19 @@
-# REPORT - Column Display Feature (v1.2.0)
+1. Comparison of Implementation Complexity:
 
-## 1. General Logic for "Down Then Across" Columnar Printing
+The "down then across" (vertical) printing logic is more complex than the "across" (horizontal) printing logic. 
 
-The "down then across" printing method prints filenames row by row across multiple columns. The steps involved are:
+- Vertical (down then across) mode requires pre-calculation of the number of rows and columns. This is because filenames need to be distributed across columns so that they are printed top-to-bottom first, then left-to-right. The program must know the total number of files, the maximum filename length, and the terminal width to calculate how many rows and columns can fit. It also needs to iterate over the filenames in a row-major order, which requires careful indexing.
 
-1. Read all directory entries into a dynamically allocated array of strings.
-2. Keep track of the length of the longest filename.
-3. Calculate the number of columns that can fit in the terminal:
-   - Terminal width / (maximum filename length + spacing)
-4. Calculate the number of rows needed:
-   - rows = ceil(total_files / num_columns)
-5. Iterate row by row and print each file from every column for that row:
-   - For row i: print filenames[i], filenames[i + num_rows], filenames[i + 2*num_rows], ...
-6. Pad each filename with spaces to ensure columns align properly.
+- Horizontal (across) mode is simpler. Files are printed left-to-right in order, wrapping to the next line when the current line is full. It still uses the terminal width and maximum filename length for spacing, but no pre-calculation of rows is needed. A single loop tracking the current horizontal position is sufficient.
 
-**Why a simple loop is insufficient:**  
-A single loop would print filenames linearly, producing a single column or a poorly aligned horizontal layout. The "down then across" format ensures that columns are evenly filled and visually aligned, making the output more readable.
+Therefore, the vertical printing logic requires more pre-calculation because it must determine the layout in terms of rows and columns before printing.
 
----
+2. Strategy for Managing Display Modes:
 
-## 2. Purpose of ioctl System Call
+In the code, a simple integer flag variable (or enum) is used to track the selected display mode:
 
-The `ioctl` system call with the `TIOCGWINSZ` request is used to programmatically detect the current terminal width. This allows the program to dynamically adjust the number of columns to fit the terminal screen.
+- Default mode (0): Down then across columns
+- Long-listing mode (-l): Detailed listing
+- Horizontal mode (-x): Row-major horizontal display
 
-**Limitations of a fixed-width fallback (e.g., 80 columns):**
-
-- Columns may not fully utilize the terminal width or may exceed it, causing line wrapping.
-- The output layout will not adapt when the terminal is resized.
-- Overall user experience is less flexible and visually inconsistent across different terminal sizes.
+The program uses `getopt()` to parse command-line arguments. When the `-l` option is detected, the flag is set to long-listing mode. When the `-x` option is detected, the flag is set to horizontal mode. After reading all filenames into an array, the main display function checks the flag and calls the appropriate printing function based on the selected mode. This allows all three display modes to coexist cleanly in the same program.

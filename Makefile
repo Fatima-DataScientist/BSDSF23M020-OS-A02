@@ -1,13 +1,12 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -g
-SRC = src/lsv1.3.0.c
-OBJ = obj/lsv1.3.0.o
+SRC = src/lsv1.4.0.c
+OBJ = obj/lsv1.4.0.o
 BIN = bin/ls
 
 all: $(BIN)
 
 $(BIN): $(OBJ)
-	mkdir -p bin
 	$(CC) $(CFLAGS) -o $(BIN) $(OBJ)
 
 $(OBJ): $(SRC)
@@ -16,4 +15,3 @@ $(OBJ): $(SRC)
 
 clean:
 	rm -rf obj/*.o $(BIN)
-
